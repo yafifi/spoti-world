@@ -1,15 +1,12 @@
 import './style.css'
 
-//console.log("JS running successfully");
+
+// ========================  SPOTIFY LOGIN PROCESS ======================== // 
 
 const loginButton = document.getElementById("login-button")
-const token = getAccessTokenFromUrl();
-
-// Events
 loginButton.addEventListener("click", () => {
     loginWithSpotify();
 });
-
 
 // Spotify Login Credentials
 const clientId = "f639b9751ac0410d82f90ffea1fef2d5";
@@ -30,16 +27,49 @@ function loginWithSpotify() {
   window.location.href = authUrl;
 }
 
-// Handle Redirect Token
-function getAccessTokenFromUrl() {
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  return params.get("access_token");
+
+// ========================  AQUIRE USER TOKEN ======================== // 
+
+// Save temp code from Login
+const code = getCodeFromUrl();
+// temporary code
+console.log("AUTH CODE:", code); 
+// Get token from temp code
+if (code) {
+  const token = await exchangeCodeForToken(code);
+  if (token){
+    console.log("SUCCESS TOKEN:", token);
+  }
 }
 
-if (token) {
-  console.log("Access Token: ", token);
-  //document.body.innerHTML = "<h2>Logged in successfully</h2>";
-} else {
-  console.log("No Token Found");
+// Get Spotify Token
+function getCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("code");
+}
+
+// Exchange temporary code for access token
+async function exchangeCodeForToken(code) {
+  const codeVerifier = localStorage.getItem("code_verifier");
+
+  const body = new URLSearchParams({
+    cliend_id: clientId,
+    grant_type: "authorization_code",
+    code: code,
+    redirect_uri: redirectUri,
+    code_verifier: codeVerifier,
+  });
+
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body,
+  });
+
+  const data = await response.json();
+  console.log("ACCESS TOKEN:", data.access_token);
+
+  return data.access_token;
 }
