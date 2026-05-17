@@ -1,11 +1,34 @@
 import './style.css'
 
-// ========================  SPOTIFY LOGIN FLOW ======================== // 
+// ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
 
-const loginButton = document.getElementById("login-button")
-loginButton.addEventListener("click", () => {
-    loginWithSpotify();
-});
+// Random String
+function generateRandomString (length) {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+}
+
+// Code Challenge Help Functions
+const sha256 = async (plain) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return window.crypto.subtle.digest('SHA-256', data);
+}
+
+const base64encode = (input) => {
+  return btoa(String.fromCharCode(...new Uint8Array(input)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+function getTokenFromStorage() {
+  return localStorage.getItem("access_token");
+}
+
+
+// ========================  SPOTIFY LOGIN FLOW ======================== // 
 
 // Spotify Login Credentials
 const clientId = "f639b9751ac0410d82f90ffea1fef2d5";
@@ -15,6 +38,11 @@ const scope = "user-top-read";
 
 // Spotify Login Function
 async function loginWithSpotify() {
+
+  // DEBUG
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("code_verifier");
+
   const authUrl = new URL("https://accounts.spotify.com/authorize");
 
   // generate and store verifier
@@ -92,70 +120,109 @@ async function getToken(code) {
   return token;
 }
 
+// ========================  GET TOP TRACKS ======================== //
 
-// ========================  GET TOP TRACKS ======================== // 
+const analyzeTopTracksButton = document.getElementById("analyzeTopTracks-button")
 
+analyzeTopTracksButton.addEventListener("click", async () => {
+    const token = getTokenFromStorage();
+    const tracks = await getTopTracks(token);
+    renderTracks(tracks);
+    showResultsTopTracksPage();
+});
+
+async function getTopTracks(token) {
+  if (!token) {
+    console.error("No token available");
+    return [];
+  }
+
+  const response = await fetch(
+    "https://api.spotify.com/v1/me/top/tracks?limit=20",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+  
+  const data = await response.json();
+  console.log("TOP TRACKS:", data);
+  return data.items;
+}
+
+function renderTracks(tracks) {
+  const container = document.getElementById("tracks-container");
+  container.innerHTML = "";
+
+  tracks.forEach(track => {
+    const div = document.createElement("div");
+
+    const artistNames = track.artists
+    .map(artist => artist.name)
+    .join(" - ");
+
+    div.innerHTML = `
+    <p><strong>${track.name}</strong></p>
+    <p>${artistNames}</p>
+    <hr/>
+    `;
+
+    container.appendChild(div);
+  });
+}
 
 
 // ========================  UI FUNCTIONS ======================== // 
-let loginPage = document.getElementById("login-page");
-let analysisPage = document.getElementById("analysis-page");
-const token = localStorage.getItem("access_token");
+const loginPage = document.getElementById("login-page");
+const analysisPage = document.getElementById("analysis-page");
+const resultsTopTracksPage = document.getElementById("resultsTopTracks-page");
+
+const loginButton = document.getElementById("login-button")
+const backToAnalysisButton = document.getElementById("back-to-analysis-button");
+
+const token = getTokenFromStorage();
 
 document.addEventListener("DOMContentLoaded", () => {
+  loginButton.addEventListener("click", () => {
+      loginWithSpotify();
+  }); 
+  
+  backToAnalysisButton.addEventListener("click", () => {
+    showAnalysisPage();
+  });
+
+  document.getElementById("back-to-analysis-button").addEventListener("click", () => {
+    showAnalysisPage();
+  });
+
   initApp();
 });
 
 function initApp() {
-  if (token) {
-    showAnalysisPage();
-  } else {
+  if (token && window.location.pathname !== "/callback") {
     showLoginPage();
+  } else {
+    showAnalysisPage();
   }
 }
 
 function showAnalysisPage() {
-  if (!loginPage || !analysisPage) {
-    console.error("DOM not ready:", { loginPage, analysisPage });
-    return;
-  }
-
   loginPage.style.display = "none";
   analysisPage.style.display = "block";
+  resultsTopTracksPage.style.display = "none";
 }
 
 function showLoginPage() {
-  if (!loginPage || !analysisPage) {
-    console.error("DOM not ready:", { loginPage, analysisPage });
-    return;
-  }
-
   loginPage.style.display = "block";
   analysisPage.style.display = "none";
+  resultsTopTracksPage.style.display = "none";
 }
 
-
-// ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
-
-// Random String
-const generateRandomString = (length) => {
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const values = crypto.getRandomValues(new Uint8Array(length));
-  return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-}
-
-// Code Challenge Help Functions
-const sha256 = async (plain) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return window.crypto.subtle.digest('SHA-256', data);
-}
-
-const base64encode = (input) => {
-  return btoa(String.fromCharCode(...new Uint8Array(input)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+function showResultsTopTracksPage() {
+  loginPage.style.display = "none";
+  analysisPage.style.display = "none";
+  resultsTopTracksPage.style.display = "block";
 }
 
 
