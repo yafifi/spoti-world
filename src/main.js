@@ -39,10 +39,6 @@ const scope = "user-top-read";
 // Spotify Login Function
 async function loginWithSpotify() {
 
-  // DEBUG
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("code_verifier");
-
   const authUrl = new URL("https://accounts.spotify.com/authorize");
 
   // generate and store verifier
@@ -127,6 +123,12 @@ const analyzeTopTracksButton = document.getElementById("analyzeTopTracks-button"
 analyzeTopTracksButton.addEventListener("click", async () => {
     const token = getTokenFromStorage();
     const tracks = await getTopTracks(token);
+
+    if (tracks.length === 0) { 
+      showLoginPage();
+      return;
+    } 
+
     renderTracks(tracks);
     showResultsTopTracksPage();
 });
@@ -146,6 +148,16 @@ async function getTopTracks(token) {
     }
   );
   
+  // If token is expired or invalid
+  if (response.status === 401) {
+    localStorage.removeItem("access_token");
+
+    alert("Your Spotify session has expired. Please log in again.");
+
+    initApp();
+    return [];
+  }
+
   const data = await response.json();
   console.log("TOP TRACKS:", data);
   return data.items;
@@ -200,6 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
+  // fetch latest token
+  const token = getTokenFromStorage();
+
   if (token && window.location.pathname !== "/callback") {
     showLoginPage();
   } else {
