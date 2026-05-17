@@ -27,6 +27,33 @@ function getTokenFromStorage() {
   return localStorage.getItem("access_token");
 }
 
+// ========================  DATA DISPLAY HELPER FUNCTIONS ======================== // 
+
+function renderList(list) {
+  const container = document.getElementById("list-container");
+  container.innerHTML = "";
+
+  list.forEach(item => {
+    const div = document.createElement("div");
+
+    let subtitle = "";
+
+    // Tracks have artists, Artists don't
+    if (item.artists) {
+      subtitle = item.artists
+      .map(artist => artist.name)
+      .join(" - ");
+    }
+
+    div.innerHTML = `
+    <p><strong>${item.name}</strong></p>
+    <p>${subtitle}</p>
+    <hr/>
+    `;
+
+    container.appendChild(div);
+  });
+}
 
 // ========================  SPOTIFY LOGIN FLOW ======================== // 
 
@@ -129,8 +156,8 @@ analyzeTopTracksButton.addEventListener("click", async () => {
       return;
     } 
 
-    renderTracks(tracks);
-    showResultsTopTracksPage();
+    renderList(tracks);
+    showResultsPage();
 });
 
 async function getTopTracks(token) {
@@ -147,48 +174,75 @@ async function getTopTracks(token) {
       }
     }
   );
-  
+
   // If token is expired or invalid
-  if (response.status === 401) {
-    localStorage.removeItem("access_token");
+    if (response.status === 401) {
+      localStorage.removeItem("access_token");
 
-    alert("Your Spotify session has expired. Please log in again.");
+      alert("Your Spotify session has expired. Please log in again.");
 
-    initApp();
-    return [];
-  }
+      initApp();
+      return [];
+    }
 
   const data = await response.json();
   console.log("TOP TRACKS:", data);
   return data.items;
 }
 
-function renderTracks(tracks) {
-  const container = document.getElementById("tracks-container");
-  container.innerHTML = "";
 
-  tracks.forEach(track => {
-    const div = document.createElement("div");
 
-    const artistNames = track.artists
-    .map(artist => artist.name)
-    .join(" - ");
+// ========================  GET TOP ARTISTS ======================== //
+const analyzeTopArtistsButton = document.getElementById("analyzeTopArtists-button")
 
-    div.innerHTML = `
-    <p><strong>${track.name}</strong></p>
-    <p>${artistNames}</p>
-    <hr/>
-    `;
+analyzeTopArtistsButton.addEventListener("click", async () => {
+    const token = getTokenFromStorage();
+    const artists = await getTopArtists(token);
 
-    container.appendChild(div);
-  });
+    if (artists.length === 0) { 
+      showLoginPage();
+      return;
+    } 
+
+    renderList(artists);
+    showResultsPage();
+});
+
+async function getTopArtists(token) {
+  if (!token) {
+      console.error("No token available");
+      return [];
+    }
+
+    const response = await fetch(
+      "https://api.spotify.com/v1/me/top/artists?limit=20",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    // If token is expired or invalid
+    if (response.status === 401) {
+      localStorage.removeItem("access_token");
+
+      alert("Your Spotify session has expired. Please log in again.");
+
+      initApp();
+      return [];
+    }
+
+    const data = await response.json();
+    console.log("TOP ARTISTS:", data);
+
+    return data.items || [];
 }
-
 
 // ========================  UI FUNCTIONS ======================== // 
 const loginPage = document.getElementById("login-page");
 const analysisPage = document.getElementById("analysis-page");
-const resultsTopTracksPage = document.getElementById("resultsTopTracks-page");
+const resultsPage = document.getElementById("results-page");
 
 const loginButton = document.getElementById("login-button")
 const backToAnalysisButton = document.getElementById("back-to-analysis-button");
@@ -225,20 +279,18 @@ function initApp() {
 function showAnalysisPage() {
   loginPage.style.display = "none";
   analysisPage.style.display = "block";
-  resultsTopTracksPage.style.display = "none";
+  resultsPage.style.display = "none";
 }
 
 function showLoginPage() {
   loginPage.style.display = "block";
   analysisPage.style.display = "none";
-  resultsTopTracksPage.style.display = "none";
+  resultsPage.style.display = "none";
 }
 
-function showResultsTopTracksPage() {
+function showResultsPage() {
   loginPage.style.display = "none";
   analysisPage.style.display = "none";
-  resultsTopTracksPage.style.display = "block";
+  resultsPage.style.display = "block";
 }
-
-
 
