@@ -93,7 +93,46 @@ async function getToken(code) {
 }
 
 
+// ========================  GET TOP TRACKS ======================== // 
 
+
+
+// ========================  UI FUNCTIONS ======================== // 
+let loginPage = document.getElementById("login-page");
+let analysisPage = document.getElementById("analysis-page");
+const token = localStorage.getItem("access_token");
+
+document.addEventListener("DOMContentLoaded", () => {
+  initApp();
+});
+
+function initApp() {
+  if (token) {
+    showAnalysisPage();
+  } else {
+    showLoginPage();
+  }
+}
+
+function showAnalysisPage() {
+  if (!loginPage || !analysisPage) {
+    console.error("DOM not ready:", { loginPage, analysisPage });
+    return;
+  }
+
+  loginPage.style.display = "none";
+  analysisPage.style.display = "block";
+}
+
+function showLoginPage() {
+  if (!loginPage || !analysisPage) {
+    console.error("DOM not ready:", { loginPage, analysisPage });
+    return;
+  }
+
+  loginPage.style.display = "block";
+  analysisPage.style.display = "none";
+}
 
 
 // ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
@@ -118,3 +157,6 @@ const base64encode = (input) => {
     .replace(/\+/g, '-')
     .replace(/\//g, '_');
 }
+
+
+
