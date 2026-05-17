@@ -2,8 +2,19 @@ body {
     color: #b3b3b3;
     background-color: #121212;
     font-family: Arial, sans-serif;
+    text-align: center;
 }
 
 h1 {
     color: #1DB954;
+}
+
+button {
+  background-color: #1DB954;
+  border: none;
+  color: white;
+}
+
+button:hover {
+  background-color: #0e6b2f;
 }
