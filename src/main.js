@@ -39,24 +39,23 @@ async function loginWithSpotify() {
   window.location.href = authUrl.toString();
 }
 
-
-
 // ========================  AQUIRE USER TOKEN ======================== // 
 
-function handleCallback() {
+// Handle Callback
   // retrive temp code from URL
   const urlParams = new URLSearchParams(window.location.search);
   let code = urlParams.get('code');
 
   // if successful, get user token
   if (code) {
-    getToken(code);
-  };
-
-  if(token) {
-    console.log("SUCCESS TOKEN:", token);
-  };
+  (async () => {
+    const token = await getToken(code);
+    if (token) {
+      console.log("SUCCESS TOKEN:", token);
+    }
+  })();
 }
+
 
 // Exchange temporary code for access token
 async function getToken(code) {
