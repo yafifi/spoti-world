@@ -1,7 +1,6 @@
 import './style.css'
 
-
-// ========================  SPOTIFY LOGIN PROCESS ======================== // 
+// ========================  SPOTIFY LOGIN FLOW ======================== // 
 
 const loginButton = document.getElementById("login-button")
 loginButton.addEventListener("click", () => {
@@ -11,65 +10,112 @@ loginButton.addEventListener("click", () => {
 // Spotify Login Credentials
 const clientId = "f639b9751ac0410d82f90ffea1fef2d5";
 const redirectUri = "http://127.0.0.1:5173/callback";
-const scopes = [
-  "user-top-read"
-]
+const scope = "user-top-read";
+
 
 // Spotify Login Function
-function loginWithSpotify() {
-  const authUrl = "https://accounts.spotify.com/authorize" +
-                  `?client_id=${clientId}` +
-                   `&response_type=code` +
-                   `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-                   `&scope=${encodeURIComponent(scopes.join(" "))}`;
+async function loginWithSpotify() {
+  const authUrl = new URL("https://accounts.spotify.com/authorize");
 
-  console.log(authUrl);
-  window.location.href = authUrl;
+  // generate and store verifier
+  const codeVerifier = generateRandomString(128);
+  localStorage.setItem("code_verifier", codeVerifier);
+
+  // generate code challenge
+  const hashed = await sha256(codeVerifier)
+  const codeChallenge = base64encode(hashed);
+
+  const params =  {
+    response_type: 'code',
+    client_id: clientId,
+    scope,
+    code_challenge_method: 'S256',
+    code_challenge: codeChallenge,
+    redirect_uri: redirectUri,
+  }
+  
+  // redirect to spotify
+  authUrl.search = new URLSearchParams(params).toString();
+  window.location.href = authUrl.toString();
 }
+
 
 
 // ========================  AQUIRE USER TOKEN ======================== // 
 
-// Save temp code from Login
-const code = getCodeFromUrl();
-// temporary code
-console.log("AUTH CODE:", code); 
-// Get token from temp code
-if (code) {
-  const token = await exchangeCodeForToken(code);
-  if (token){
-    console.log("SUCCESS TOKEN:", token);
-  }
-}
+function handleCallback() {
+  // retrive temp code from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  let code = urlParams.get('code');
 
-// Get Spotify Token
-function getCodeFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("code");
+  // if successful, get user token
+  if (code) {
+    getToken(code);
+  };
+
+  if(token) {
+    console.log("SUCCESS TOKEN:", token);
+  };
 }
 
 // Exchange temporary code for access token
-async function exchangeCodeForToken(code) {
+async function getToken(code) {
   const codeVerifier = localStorage.getItem("code_verifier");
 
-  const body = new URLSearchParams({
-    cliend_id: clientId,
-    grant_type: "authorization_code",
-    code: code,
-    redirect_uri: redirectUri,
-    code_verifier: codeVerifier,
-  });
-
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
+  const url = "https://accounts.spotify.com/api/token";
+  const payload = {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: body,
-  });
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
+    }),
+  }
 
-  const data = await response.json();
-  console.log("ACCESS TOKEN:", data.access_token);
+  const body = await fetch(url, payload);
+  const response = await body.json();
+  const token = response.access_token;
 
-  return data.access_token;
+  console.log("TOKEN RESPONSE:", response);
+  console.log("STATUS:", body.status);
+
+  localStorage.setItem('access_token', response.access_token);
+
+  if (token){
+      console.log("SUCCESS TOKEN:", token);
+  }
+
+  return token;
+}
+
+
+
+
+
+// ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
+
+// Random String
+const generateRandomString = (length) => {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+}
+
+// Code Challenge Help Functions
+const sha256 = async (plain) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return window.crypto.subtle.digest('SHA-256', data);
+}
+
+const base64encode = (input) => {
+  return btoa(String.fromCharCode(...new Uint8Array(input)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
 }
