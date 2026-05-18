@@ -1,5 +1,6 @@
 import './style.css'
 
+
 // ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
 
 // Random String
@@ -26,6 +27,7 @@ const base64encode = (input) => {
 function getTokenFromStorage() {
   return localStorage.getItem("access_token");
 }
+
 
 // ========================  DATA DISPLAY HELPER FUNCTIONS ======================== // 
 
@@ -68,13 +70,13 @@ function renderList(list, type) {
   });
 }
 
+
 // ========================  SPOTIFY LOGIN FLOW ======================== // 
 
 // Spotify Login Credentials
 const clientId = "f639b9751ac0410d82f90ffea1fef2d5";
 const redirectUri = "http://127.0.0.1:5173/callback";
 const scope = "user-top-read";
-
 
 // Spotify Login Function
 async function loginWithSpotify() {
@@ -103,6 +105,7 @@ async function loginWithSpotify() {
   window.location.href = authUrl.toString();
 }
 
+
 // ========================  AQUIRE USER TOKEN ======================== // 
 
 // Handle Callback
@@ -119,7 +122,6 @@ async function loginWithSpotify() {
     }
   })();
 }
-
 
 // Exchange temporary code for access token
 async function getToken(code) {
@@ -155,6 +157,7 @@ async function getToken(code) {
 
   return token;
 }
+
 
 // ========================  GET TOP TRACKS ======================== //
 
@@ -204,7 +207,6 @@ async function getTopTracks(token) {
 }
 
 
-
 // ========================  GET TOP ARTISTS ======================== //
 const analyzeTopArtistsButton = document.getElementById("analyzeTopArtists-button")
 
@@ -252,6 +254,7 @@ async function getTopArtists(token) {
     return data.items || [];
 }
 
+
 // ========================  UI FUNCTIONS ======================== // 
 const loginPage = document.getElementById("login-page");
 const analysisPage = document.getElementById("analysis-page");
@@ -290,6 +293,9 @@ function initApp() {
 }
 
 function showAnalysisPage() {
+  document.getElementById("list-container").innerHTML = "";
+  window.scrollTo(0, 0);
+
   loginPage.style.display = "none";
   analysisPage.style.display = "block";
   resultsPage.style.display = "none";
