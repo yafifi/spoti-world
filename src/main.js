@@ -1,6 +1,5 @@
 import './style.css'
 
-
 // ========================  SPOTIFY API HELPER FUNCTIONS ======================== // 
 
 // Random String
@@ -65,7 +64,7 @@ function renderList(list, type) {
         <p><strong>${item.name}</strong></p>
       `;
     }
-
+    
     container.appendChild(div);
   });
 }
@@ -208,6 +207,7 @@ async function getTopTracks(token) {
 
 
 // ========================  GET TOP ARTISTS ======================== //
+
 const analyzeTopArtistsButton = document.getElementById("analyzeTopArtists-button")
 
 analyzeTopArtistsButton.addEventListener("click", async () => {
@@ -256,6 +256,7 @@ async function getTopArtists(token) {
 
 
 // ========================  UI FUNCTIONS ======================== // 
+
 const loginPage = document.getElementById("login-page");
 const analysisPage = document.getElementById("analysis-page");
 const resultsPage = document.getElementById("results-page");
