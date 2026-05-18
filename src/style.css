@@ -7,14 +7,39 @@ body {
 
 h1 {
     color: #1DB954;
+    font-size: 56px;
 }
 
 button {
   background-color: #1DB954;
   border: none;
   color: white;
+  width: 200px;
+  height: 60px;
+  border-radius: 8px;
+  font-size: 18px;
 }
 
 button:hover {
   background-color: #0e6b2f;
+}
+
+#list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.card {
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }

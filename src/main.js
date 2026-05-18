@@ -29,27 +29,40 @@ function getTokenFromStorage() {
 
 // ========================  DATA DISPLAY HELPER FUNCTIONS ======================== // 
 
-function renderList(list) {
+function renderList(list, type) {
   const container = document.getElementById("list-container");
   container.innerHTML = "";
 
   list.forEach(item => {
     const div = document.createElement("div");
+    div.classList.add("card");
 
-    let subtitle = "";
+    let imageUrl = ""; 
 
-    // Tracks have artists, Artists don't
-    if (item.artists) {
-      subtitle = item.artists
-      .map(artist => artist.name)
-      .join(" - ");
+    // Tracks
+    if (type === "tracks") {
+      imageUrl = item.album?.images?.[0]?.url;
+
+      const artistNames = item.artists
+      .map (a => a.name)
+      .join(", ");
+
+      div.innerHTML = `
+        <img src="${imageUrl}" width="100" />
+          <p><strong>${item.name}</strong></p>
+          <p>${artistNames}</p>
+        `;
     }
 
-    div.innerHTML = `
-    <p><strong>${item.name}</strong></p>
-    <p>${subtitle}</p>
-    <hr/>
-    `;
+    // Artists
+    if (type === "artists") {
+      imageUrl = item.images?.[0]?.url;
+
+      div.innerHTML = `
+        <img src="${imageUrl}" width="100" />
+        <p><strong>${item.name}</strong></p>
+      `;
+    }
 
     container.appendChild(div);
   });
@@ -156,7 +169,7 @@ analyzeTopTracksButton.addEventListener("click", async () => {
       return;
     } 
 
-    renderList(tracks);
+    renderList(tracks, "tracks");
     showResultsPage();
 });
 
@@ -204,7 +217,7 @@ analyzeTopArtistsButton.addEventListener("click", async () => {
       return;
     } 
 
-    renderList(artists);
+    renderList(artists, "artists");
     showResultsPage();
 });
 
