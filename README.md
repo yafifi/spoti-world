@@ -7,6 +7,12 @@ Spoti-World analyzes your most recent Spotify listening data and shares your top
 - Fetch Top Tracks
 - Display Results
 
+### Tech Stack
+- JavaScript
+- HTML
+- CSS
+- Spotify Web API
+
 ### Spotify Developer Setup
 To run this app you must have a Spotify Developer account.
 
@@ -28,7 +34,7 @@ src/main.js (line 77)
 ### Future Features
 The goal is for Spoti-World to really analyze where in the world the music you listen to comes from. However due to the timeline of this assignment and the need for additional data layers, I have kept the current implementation as an MVP version.
 
-Additonal Fetures:
+Additional Fetures:
 - Country-level analysis of top artists (requires additional datasets)
 - Interactive world map visualization of listening habits
 - Language clustering of top tracks
