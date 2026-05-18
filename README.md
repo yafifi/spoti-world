@@ -26,7 +26,7 @@ src/main.js (line 77)
 4. Open App in Local Browser
 
 ### Future Features
-The goal is for Spoti-World to really analyze where in the world the music you listen to comes from. However due to the timeline of this assignment and the need for additional data layers, I have kept the current imlementation as an MVP version.
+The goal is for Spoti-World to really analyze where in the world the music you listen to comes from. However due to the timeline of this assignment and the need for additional data layers, I have kept the current implementation as an MVP version.
 
 Additonal Fetures:
 - Country-level analysis of top artists (requires additional datasets)
